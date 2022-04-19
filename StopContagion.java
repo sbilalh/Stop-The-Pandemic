@@ -10,8 +10,9 @@ import java.util.Scanner;
 public class StopContagion {
 
     // removing based on highest degree
-    public static void removeDegree(ArrayList<ArrayList<Integer>> graph, int numNodes) {
+    public static int[][] removeDegree(ArrayList<ArrayList<Integer>> graph, int numNodes) {
 
+        int[][] output = new int[numNodes][2];
         // outer for loop to remove only numNodes number of nodes
         for (int i = 0; i < numNodes; i++) {
 
@@ -26,6 +27,9 @@ public class StopContagion {
                 }
             }
 
+            output[i][0] = nodeToRemove;
+            output[i][1] = max;
+
             // removing nodeToRemove
             for (int j = 0; j < max; j++) {
                 int curr = graph.get(nodeToRemove).get(j);
@@ -36,33 +40,67 @@ public class StopContagion {
                 }
             }
             graph.set(nodeToRemove, new ArrayList<>());
-
         }
+
+        return output;
+
     }
 
     // removing based on collective influence
-    public static void removeInfluence(ArrayList<ArrayList<Integer>> graph, int numNodes) {
+    public static int[][] removeInfluence(ArrayList<ArrayList<Integer>> graph, int numNodes, int r) {
 
+        int[][] output = new int[numNodes][2];
+        // outer for loop to remove only numNodes number of nodes
+        for (int i = 0; i < numNodes; i++) {
+
+            int[] influenceArray = collectiveInfluence(graph, r);
+            // finding node with highest influence
+            int max = 0;
+            int nodeToRemove = 0;
+            for (int j = 0; j < influenceArray.length; j++) {
+                if (max < influenceArray[j]) {
+                    max = influenceArray[j];
+                    nodeToRemove = j;
+                }
+            }
+
+            output[i][0] = nodeToRemove;
+            output[i][1] = max;
+
+            // removing nodeToRemove
+            for (int j = 0; j < graph.get(nodeToRemove).size(); j++) {
+                int curr = graph.get(nodeToRemove).get(j);
+                for (int k = 0; k < graph.get(curr).size(); k++) {
+                    if (graph.get(curr).get(k) == nodeToRemove) {
+                        graph.get(curr).remove(k);
+                    }
+                }
+            }
+            graph.set(nodeToRemove, new ArrayList<>());
+        }
+        return output;
     }
 
-    // a modified version of BFS that stores predecessor
-    // of each vertex in array pred
-    // and its distance from source in array dist
+    // a modified version of BFS that stores predecessor of each vertex in array pred and its distance from source in array dist
     public static int[] BFS(ArrayList<ArrayList<Integer>> graph, int src, int v, int[] pred, int[] dist) {
         
+        // initializing queue for BFS algorithm and visited array
         LinkedList<Integer> queue = new LinkedList<Integer>();
         boolean visited[] = new boolean[v];
 
+        // setting initial values for visited array, distance array and predecessor array
         for (int i = 0; i < v; i++) {
             visited[i] = false;
             dist[i] = Integer.MAX_VALUE;
             pred[i] = -1;
         }
 
+        // setting array values for source node
         visited[src] = true;
         dist[src] = -1;
         queue.add(src);
 
+        // performing BFS and updating values in distance array
         while (!queue.isEmpty()) {
             int u = queue.remove();
             for (int i = 0; i < graph.get(u).size(); i++) {
@@ -74,9 +112,10 @@ public class StopContagion {
                 }
             }
         }
-        return dist;
-    }
 
+        return dist;
+
+    }
 
     // returns an array of the degree of the node
     public static int[] degreeOfNodes(ArrayList<ArrayList<Integer>> graph){
@@ -88,14 +127,31 @@ public class StopContagion {
         }
 
         return output;
-    }
 
+    }
 
     // calculates collective influence of each node (puts it into array) returns node of highest influence
-    public static Integer collectiveInfluence(ArrayList<ArrayList<Integer>> graph) {
-
+    public static int[] collectiveInfluence(ArrayList<ArrayList<Integer>> graph, int r) {
+        
+        // initializing required arrays
+        int[] degreeOfNodes = degreeOfNodes(graph);
+        int[] radiusArray = new int[graph.size()];
+        int[] pred = new int[graph.size()];
+        int[] influenceArray = new int[graph.size()];
+        
+        // populating influence array with collective influence of each node
+        for (int i = 0; i < graph.size(); i++) {
+            radiusArray = BFS(graph, i, graph.size(), pred, radiusArray);
+            int sumOfLinks = 0;
+            for (int j = 0; j < radiusArray.length; j++) {
+                if (r == radiusArray[j]) {
+                    sumOfLinks += degreeOfNodes[j];
+                }
+            }
+            influenceArray[i] = sumOfLinks * (degreeOfNodes[i]-1);
+        }
+        return influenceArray;
     }
-
 
     // testing print method
     public static void print(ArrayList<ArrayList<Integer>> graph) {
@@ -109,8 +165,8 @@ public class StopContagion {
         }
     }
 
-    // creating the graph
-    public static void createGraph(File f, ArrayList<ArrayList<Integer>> l) throws FileNotFoundException {
+    // adding values to the graph
+    public static void addValues(File f, ArrayList<ArrayList<Integer>> l) throws FileNotFoundException {
         String line;
         Scanner sc = new Scanner(f);
 
@@ -134,9 +190,8 @@ public class StopContagion {
 
     }
 
-    public static void main(String[] args) throws FileNotFoundException {
-
-        String input = args[0];
+    // creates the intial graph
+    public static ArrayList<ArrayList<Integer>> createGraph(String input) throws FileNotFoundException {
         File file = new File(input);
         Scanner scnr = new Scanner(file);
 
@@ -149,23 +204,54 @@ public class StopContagion {
             e.printStackTrace();
         }
 
+        // size of the graph
+        int size = lines+1;
+
         // this will be the graph
-        ArrayList<ArrayList<Integer>> graph = new ArrayList<ArrayList<Integer>>(lines+1);
-        for (int i = 0; i < lines+1; i++) {
+        ArrayList<ArrayList<Integer>> graph = new ArrayList<ArrayList<Integer>>(size);
+        for (int i = 0; i < size; i++) {
             graph.add(new ArrayList<>());
         }
         scnr.close();
-        createGraph(file, graph);
-        
-        print(graph);
+        addValues(file, graph);
 
-        // testing BFS
-        int[]output = new int[15];
-        int[] pred = new int[15];
-        output = BFS(graph, 4, 15, pred, output);
-        System.out.println("final output:");
-        for(int i=1; i<output.length; i++){
-            System.out.println("index "+i+": "+output[i]);
+        return graph;
+    }
+    public static void main(String[] args) throws FileNotFoundException {
+        int numNodes = 0;
+        int r = 2;
+        switch (args.length) {
+            // removing based on degree if -d given or based on collective influence with default radius of 2
+            case 3:
+                if (args[0].equals("-d")) {
+                    // remove based on influence
+                    ArrayList<ArrayList<Integer>> graph = createGraph(args[2]);
+                    numNodes = Integer.parseInt(args[1]);
+                    int[][] output = removeDegree(graph, numNodes);
+                    for (int i = 0; i < output.length; i++) {
+                        System.out.println(output[i][0] + " " + output[i][1]);
+                    }
+                }
+                else {
+                    //remove based on collective influence with default radius of 2
+                    ArrayList<ArrayList<Integer>> graph = createGraph(args[2]);
+                    numNodes = Integer.parseInt(args[1]);
+                    int[][] output = removeInfluence(graph, numNodes, r);
+                    for (int i = 0; i < output.length; i++) {
+                        System.out.println(output[i][0] + " " + output[i][1]);
+                    }
+                }
+                break;
+            // removing based on collective influence with given radius
+            case 4:
+                ArrayList<ArrayList<Integer>> graph = createGraph(args[3]);
+                numNodes = Integer.parseInt(args[2]);
+                r = Integer.parseInt(args[1]);
+                int[][] output = removeInfluence(graph, numNodes, r);
+                for (int i = 0; i < output.length; i++) {
+                    System.out.println(output[i][0] + " " + output[i][1]);
+                }
+                break;
         }
     }
 }
