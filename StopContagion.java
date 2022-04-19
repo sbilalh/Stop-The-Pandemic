@@ -49,6 +49,14 @@ public class StopContagion {
 
     }
 
+    //Make a method that returns the shortest path array for a given node
+
+
+    //TODO: Make a method that returns an array of the degree of the node
+
+    //Calculates collective influence of each node (puts it into array) returns node of highest influence
+
+
     // testing print method
     public static void print(ArrayList<ArrayList<Node>> graph) {
         for (int i = 0; i < graph.size(); i++) {
@@ -72,11 +80,13 @@ public class StopContagion {
         Scanner sc = new Scanner(f);
 
         while (sc.hasNextLine()) {
+
             // getting input
             line = sc.nextLine();
             String[] split = line.split("\\s+");
 
             if (split[0] != null && split[1] != null) {
+                
                 // adding values to adjancency list (graph)
                 int index = Integer.parseInt(split[0]);
                 int edge = Integer.parseInt(split[1]);
