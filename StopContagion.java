@@ -48,6 +48,17 @@ public class StopContagion {
 
 
     //TODO: Make a method that returns an array of the degree of the node
+    public static int[] degreeOfNodes(ArrayList<ArrayList<Node>> graph, int size){
+
+        int[] output = new int[size];
+        
+        for(int i = 0; i < graph.size(); i++){
+            output[i] = graph.get(i).size();
+        }
+
+        return output;
+    }
+
 
     //Calculates collective influence of each node (puts it into array) returns node of highest influence
 
