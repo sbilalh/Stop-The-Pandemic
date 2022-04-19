@@ -9,6 +9,11 @@ import java.util.Scanner;
 public class StopContagion {
 
     // removing based on highest degree
+    /**
+     * Removing based on highest degree
+     * @param graph the network
+     * @param numNodes the number of nodes to remove
+     */
     public static void removeDegree(ArrayList<ArrayList<Node>> graph, int numNodes) {
 
         // outer for loop to remove only numNodes number of nodes
@@ -76,7 +81,7 @@ public class StopContagion {
     }
 
     /**
-     * 
+     * Creating the graph
      * @param f File to be read as input for graph
      * @param l ArrayList of ArrayList to store the graph
      * @throws FileNotFoundException
@@ -111,7 +116,7 @@ public class StopContagion {
         File file = new File(input);
         Scanner scnr = new Scanner(file);
 
-        //reads lines of input to know size of graph
+        // reads lines of input to know size of graph
         int lines = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             while (reader.readLine() != null)
@@ -120,7 +125,7 @@ public class StopContagion {
             e.printStackTrace();
         }
 
-        //This will be the graph
+        // this will be the graph
         ArrayList<ArrayList<Node>> l = new ArrayList<ArrayList<Node>>(lines + 1);
         for (int i = 0; i < lines + 1; i++) {
             l.add(new ArrayList<>());
