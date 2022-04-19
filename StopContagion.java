@@ -49,7 +49,10 @@ public class StopContagion {
 
     }
 
-    //Make a method that returns the shortest path array for a given node
+    //TODO: Make a method that returns the shortest path array for a given node
+    public static int[] shortestPath(ArrayList<ArrayList<Node>> graph, Node node) {
+        
+    }
 
 
     //TODO: Make a method that returns an array of the degree of the node
