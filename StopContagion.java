@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Scanner;
 
 public class StopContagion {
@@ -44,34 +45,36 @@ public class StopContagion {
 
     }
 
-    // returns the shortest path array for a given node
-    //length initially should be 0
-    public static void shortestPath(ArrayList<ArrayList<Integer>> graph, Integer start, int[] output, int length, int index) {
-
-        // base case
-        if ((graph.get(start).size()-1 == index) && output[graph.get(start).get(index)] != -1) {
-            return;
-        }
-        else {
-            if (graph.get(start).size() != index && output[graph.get(start).get(index)] == -1){
-               
-                output[graph.get(start).get(index)] = length;
-                shortestPath(graph, graph.get(start).get(index), output, length+1, 0);
-                
-            }else{
-                
-                    shortestPath(graph, start, output, length, index+1);
-            }
+    // a modified version of BFS that stores predecessor
+    // of each vertex in array pred
+    // and its distance from source in array dist
+    public static int[] BFS(ArrayList<ArrayList<Integer>> graph, int src, int v, int[] pred, int[] dist) {
         
+        LinkedList<Integer> queue = new LinkedList<Integer>();
+        boolean visited[] = new boolean[v];
+
+        for (int i = 0; i < v; i++) {
+            visited[i] = false;
+            dist[i] = Integer.MAX_VALUE;
+            pred[i] = -1;
         }
 
-    }
+        visited[src] = true;
+        dist[src] = -1;
+        queue.add(src);
 
-    // changes shortest path of all nodes with radius 1 to 0 (because r-1 is required)
-     public static void shortestPathUtility(ArrayList<ArrayList<Integer>> graph, Integer start, int[] output) {
-         for (int i = 0; i < graph.get(start).size(); i++) {
-             output[graph.get(start).get(i)] = 0;
-         }
+        while (!queue.isEmpty()) {
+            int u = queue.remove();
+            for (int i = 0; i < graph.get(u).size(); i++) {
+                if (visited[graph.get(u).get(i)] == false) {
+                    visited[graph.get(u).get(i)] = true;
+                    dist[graph.get(u).get(i)] = dist[u] + 1;
+                    pred[graph.get(u).get(i)] = u;
+                    queue.add(graph.get(u).get(i));
+                }
+            }
+        }
+        return dist;
     }
 
 
@@ -88,10 +91,10 @@ public class StopContagion {
     }
 
 
-    // // calculates collective influence of each node (puts it into array) returns node of highest influence
-    // public static Integer collectiveInfluence(ArrayList<ArrayList<Integer>> graph) {
+    // calculates collective influence of each node (puts it into array) returns node of highest influence
+    public static Integer collectiveInfluence(ArrayList<ArrayList<Integer>> graph) {
 
-    // }
+    }
 
 
     // testing print method
@@ -147,50 +150,20 @@ public class StopContagion {
         }
 
         // this will be the graph
-        ArrayList<ArrayList<Integer>> l = new ArrayList<ArrayList<Integer>>(lines+1);
+        ArrayList<ArrayList<Integer>> graph = new ArrayList<ArrayList<Integer>>(lines+1);
         for (int i = 0; i < lines+1; i++) {
-            l.add(new ArrayList<>());
+            graph.add(new ArrayList<>());
         }
-
         scnr.close();
-
-        createGraph(file, l);
-        print(l);
-        //System.out.println("now removing");
-        //removeDegree(l, 1);
-       // print(l);
-
-
-        // l.get(1).add(2);
-        // l.get(2).add(1);
-
-        // l.get(1).add(3);
-        // l.get(3).add(1);
-
-        // l.get(2).add(4);
-        // l.get(4).add(2);
-
-        // l.get(2).add(5);
-        // l.get(5).add(2);
-
-        // l.get(3).add(6);
-        // l.get(6).add(3);
-
-        // l.get(4).add(5);
-        // l.get(5).add(4);
-
-
-        int[]output = new int[8];
-        for (int i =0; i<output.length; i++) {
-            output[i]=-1;
-        }
+        createGraph(file, graph);
         
-        for (int i = 0; i < l.get(4).size(); i++){   
-            shortestPath(l, 4, output,0, i);
-        }
-        shortestPathUtility(l, 4, output);
-        
-        
+        print(graph);
+
+        // testing BFS
+        int[]output = new int[15];
+        int[] pred = new int[15];
+        output = BFS(graph, 4, 15, pred, output);
+        System.out.println("final output:");
         for(int i=1; i<output.length; i++){
             System.out.println("index "+i+": "+output[i]);
         }
